@@ -23,7 +23,7 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
 
 
 // 2. Deploy the Network using a Module
-module networkResources './network.bicep' = {
+module networkResources './modules/network.bicep' = {
   name: 'networkDeployment'
   scope: resourceGroup(rg.name) // Tells the module to deploy INSIDE the new Resource Group
   params: {

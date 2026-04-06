@@ -16,7 +16,7 @@ az deployment sub create \
   --location centralindia \
   --template-file main.bicep
 
-
+```
 ## Visual Documentation
 
 ### 1. Bicep Architecture Diagram (VS Code & Azure)

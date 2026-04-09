@@ -1,11 +1,84 @@
 // AMPT-prod Secure Landing Zone - Infrastructure as Code
-// No targetScope here; it defaults to Resource Group
+// Architecture: Hub & Spoke with Azure Bastion
 
 param location string = resourceGroup().location
 param prefix string = 'AMPT2026-Bicep'
-param tags object
+param tags object = {
+    Environment: 'Production'
+    Department: 'Cloud-Ops'
+    Service: 'Network-Foundation'
+    Project: '${prefix}-Project'
+    DeployedBy: 'Arnav-Mohan'
+}
 
-// 1. Network Security Group (NSG) for Web Subnet
+// ==========================================
+// 1. HUB NETWORK (Management & Security)
+// ==========================================
+
+resource hubVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
+  name: 'vnet-${prefix}-hub-001'
+  location: location
+  tags: tags
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        '10.1.0.0/16' // Distinct address space to prevent overlap
+      ]
+    }
+    subnets: [
+      {
+        name: 'AzureBastionSubnet' // Mandatory exact name
+        properties: {
+          addressPrefix: '10.1.1.0/26' // Must be at least /26 for Bastion
+        }
+      }
+    ]
+  }
+}
+
+// Bastion Public IP (Required for Bastion Host)
+resource bastionPip 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
+  name: 'pip-${prefix}-bastion-001'
+  location: location
+  tags: tags
+  sku: {
+    name: 'Standard'
+  }
+  properties: {
+    publicIPAllocationMethod: 'Static'
+  }
+}
+
+// Azure Bastion Host (For secure SSH/RDP without Public IPs)
+resource bastionHost 'Microsoft.Network/bastionHosts@2023-05-01' = {
+  name: 'bas-${prefix}-hub-001'
+  location: location
+  tags: tags
+  sku: {
+    name: 'Basic'
+  }
+  properties: {
+    ipConfigurations: [
+      {
+        name: 'IpConf'
+        properties: {
+          subnet: {
+            id: hubVnet.properties.subnets[0].id
+          }
+          publicIPAddress: {
+            id: bastionPip.id
+          }
+        }
+      }
+    ]
+  }
+}
+
+// ==========================================
+// 2. SPOKE NETWORK (Workloads)
+// ==========================================
+
+// Network Security Group (NSG) for Web Subnet
 resource nsgWeb 'Microsoft.Network/networkSecurityGroups@2023-05-01' = {
   name: 'nsg-${prefix}-web-001'
   location: location
@@ -42,14 +115,15 @@ resource nsgWeb 'Microsoft.Network/networkSecurityGroups@2023-05-01' = {
   }
 }
 
-// 2. Virtual Network with 2 Segregated Subnets
-resource vnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
+// Spoke Virtual Network 
+resource spokeVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: 'vnet-${prefix}-prod-001'
   location: location
+  tags: tags
   properties: {
     addressSpace: {
       addressPrefixes: [
-        '10.0.0.0/16'
+        '10.0.0.0/16' // Your production address space
       ]
     }
     subnets: [
@@ -58,7 +132,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
         properties: {
           addressPrefix: '10.0.1.0/24'
           networkSecurityGroup: {
-            id: nsgWeb.id
+            id: nsgWeb.id // Public HTTPS access
           }
         }
       }
@@ -66,15 +140,48 @@ resource vnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
         name: 'snet-db-001'
         properties: {
           addressPrefix: '10.0.2.0/24'
-          // Isolated by default; no public NSG rule added
+          // Isolated by default; this is where VMs goes
         }
       }
     ]
   }
 }
 
+// ==========================================
+// 3. VNET PEERING (The Bridge)
+// ==========================================
 
-// Outputs (For future modules like Compute)
-output vnetId string = vnet.id
-output webSubnetId string = vnet.properties.subnets[0].id
-output dbSubnetId string = vnet.properties.subnets[1].id
+// Peer Hub to Spoke
+resource hubToSpokePeering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2023-05-01' = {
+  name: 'hub-to-spoke'
+  parent: hubVnet
+  properties: {
+    remoteVirtualNetwork: {
+      id: spokeVnet.id
+    }
+    allowVirtualNetworkAccess: true
+    allowForwardedTraffic: true
+  }
+}
+
+// Peer Spoke to Hub
+resource spokeToHubPeering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2023-05-01' = {
+  name: 'spoke-to-hub'
+  parent: spokeVnet
+  properties: {
+    remoteVirtualNetwork: {
+      id: hubVnet.id
+    }
+    allowVirtualNetworkAccess: true
+    allowForwardedTraffic: true
+  }
+}
+
+// ==========================================
+// 4. OUTPUTS (For main.bicep and further deployment)
+// ==========================================
+
+output spokeVnetId string = spokeVnet.id
+output webSubnetId string = spokeVnet.properties.subnets[0].id
+output dbSubnetId string = spokeVnet.properties.subnets[1].id
+output hubVnetId string = hubVnet.id

@@ -2,17 +2,10 @@
 
 targetScope = 'subscription' // This allows us to create the Resource Group
 
-param rgName string = 'AMPT-prod'
-param location string = 'centralindia'
-param prefix string = 'AMPT2026-Bicep'
-param tags object = {
-    Environment: 'Production'
-    Department: 'Cloud-Ops'
-    Service: 'Network-Foundation'
-    Project: '${prefix}-Project'
-    DeployedBy: 'Arnav-Mohan'
-}
-
+param rgName string
+param location string
+param prefix string
+param tags object
 
 // 1. Create Resource Group
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
@@ -21,13 +14,13 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   tags: tags
 } 
 
-
 // 2. Deploy the Network using a Module
-module networkResources './network.bicep' = {
+module networkResources './modules/network.bicep' = {
   name: 'networkDeployment'
   scope: resourceGroup(rg.name) // Tells the module to deploy INSIDE the new Resource Group
   params: {
     location: location
+    prefix: prefix
     tags: tags
   }
 }

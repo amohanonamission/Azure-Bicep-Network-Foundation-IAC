@@ -113,11 +113,15 @@ az deployment sub create \
 ### 1. Bicep Architecture Diagram (VS Code & Azure)
 
 ![Architecture Diagram](images/vscode-visualizer.png)
-![Azure Portal Visualizer](images/azure-resource-visualizer.png)
+![Azure Portal Visualizer](images/azure-resource-overview.png)
 
 ### 2. Deployed Resources (Azure Portal)
-![Azure Portal Resources](images/azure-resource-overview.png)
-![Deployment Status](images/deployment-status.png)
+![Azure Portal Resources](images/resource-review.png)
+![Deployment Status](images/network-status.png)
 
 ### 3. Security Hardening (NSG Rules)
 ![NSG Security Rules](images/nsg-rules.png)
+
+### 4. Resource Lock
+![Resource Lock](images/resource-lock.png)
+

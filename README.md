@@ -50,22 +50,22 @@ az deployment sub create \
 ### 1. Bicep Architecture Diagram (VS Code & Azure)
 
 ![Architecture Diagram](images/vscode-visualizer.png)
-IMG001- Diagram shows the Vscode visualizer diagram overview of the Hub-Spoke network.
+(IMG001- Diagram shows the Vscode visualizer diagram overview of the Hub-Spoke network.)
 ![Azure Portal Visualizer](images/azure-resource-overview.png)
-IMG002- Diagram shows the Azure visualizer diagram overview of the Hub-Spoke network.
+(IMG002- Diagram shows the Azure visualizer diagram overview of the Hub-Spoke network.)
 
 ### 2. Deployed Resources (Azure Portal)
 ![Azure Portal Resources](images/resource-review.png)
-IMG003- Diagram shows the Azure Resource Group overview.
+(IMG003- Diagram shows the Azure Resource Group overview.)
 
 ![Deployment Status](images/network-status.png)
-IMG004- Diagram shows the Azure Network Deployment of the Hub-Spoke network.
+(IMG004- Diagram shows the Azure Network Deployment of the Hub-Spoke network.)
 
 ### 3. Security Hardening (NSG Rules)
 ![NSG Security Rules](images/nsg-rules.png)
-IMG005- Diagram shows the Network Security group Inbound and Outbound rules.
+(IMG005- Diagram shows the Network Security group Inbound and Outbound rules.)
 
 ### 4. Resource Lock 
 ![Resource Lock](images/resource-lock.png)
-IMG006- Diagram shows the Deletion Attempt on the Resource Group with Resource Lock.
+(IMG006- Diagram shows the Deletion Attempt on the Resource Group with Resource Lock.)
 

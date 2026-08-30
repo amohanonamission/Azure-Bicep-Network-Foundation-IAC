@@ -1,4 +1,6 @@
 // AMPT-prod Secure Landing Zone - Infrastructure as Code
+// Copyright (c) 2026 [Your Name or Organization]
+// Licensed under the MIT License. See LICENSE file in the project root for full terms.
 
 targetScope = 'subscription' // This allows us to create the Resource Group
 
